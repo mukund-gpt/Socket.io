@@ -51,6 +51,7 @@ const App = () => {
       // console.log(data);
       setMessages((prevMessages) => [...prevMessages, data]);
     });
+
     socket.on("welcome", (s) => {
       console.log(s);
     });
