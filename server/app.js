@@ -24,7 +24,6 @@ app.use(
     credentials: true,
   })
 );
-// app.use(cors);
 
 app.get("/", (req, res) => {
   res.send("Hello WOrld");
@@ -37,7 +36,6 @@ app.get("/login", (req, res) => {
     .cookie("token", token, { httpOnly: true, secure: true, sameSite: "none" })
     .json({ message: "login Success" });
 });
-
 
 io.use((socket, next) => {
   cookieParser()(socket.request, socket.request.res, (err) => {
@@ -58,10 +56,11 @@ io.on("connection", (socket) => {
   // socket.emit("welcome", `welcome to server, ${socket.id}`);
   // socket.broadcast.emit("welcome", `${socket.id} joined the server`);
 
-  socket.on("message", ({ message, room }) => {
-    // console.log(data);
-    // socket.broadcast.emit("receive-message", data);
-    socket.to(room).emit("receive-message", message);
+  socket.on("message", ({ message, room, isSender }) => {
+    // Broadcast to others in the room
+    socket.to(room).emit("receive-message", { message, isSender: false });
+    // Send to the sender
+    socket.emit("receive-message", { message, isSender: true });
   });
 
   socket.on("join-room", (room) => {

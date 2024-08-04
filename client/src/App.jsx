@@ -8,15 +8,13 @@ import {
 } from "@mui/material";
 import React, { useEffect, useMemo, useState } from "react";
 import { io } from "socket.io-client";
+import "./App.css";
 
 const App = () => {
   const socket = useMemo(
     () => io("http://localhost:3000", { withCredentials: true }),
     []
   );
-
-// const App = () => {
-//   const socket = useMemo(() => io("http://localhost:3000"), []);
 
   const [message, setMessage] = useState("");
   const [room, setRoom] = useState("");
@@ -27,7 +25,7 @@ const App = () => {
   const submitHandler = (e) => {
     e.preventDefault();
     if (message !== "" && room !== "") {
-      socket.emit("message", { message, room });
+      sendMessage(message, room);
       setMessage("");
     }
   };
@@ -41,6 +39,12 @@ const App = () => {
     }
   };
 
+  const sendMessage = (message, room) => {
+    console.log("Sending message:", { message, room });
+    const data = { message, room, isSender: true };
+    socket.emit("message", data);
+  };
+
   useEffect(() => {
     socket.on("connect", () => {
       console.log("connected, your id is", socket.id);
@@ -51,7 +55,6 @@ const App = () => {
       // console.log(data);
       setMessages((prevMessages) => [...prevMessages, data]);
     });
-
     socket.on("welcome", (s) => {
       console.log(s);
     });
@@ -63,7 +66,7 @@ const App = () => {
 
   return (
     <Container maxWidth="sm">
-      <Box sx={{ height: "100px" }} />
+      <Box sx={{ height: "10px" }} />
       <Typography variant="h4" component="div" gutterBottom>
         Welcome to Socket.io
       </Typography>
@@ -110,8 +113,14 @@ const App = () => {
 
       <Stack>
         {messages.map((m, i) => (
-          <Typography key={i} variant="h6" component="div" gutterBottom>
-            {m}
+          <Typography
+            key={i}
+            className={`message ${m.isSender ? "sent" : "received"}`}
+            variant="h6"
+            component="div"
+            gutterBottom
+          >
+            {m.message}
           </Typography>
         ))}
       </Stack>
